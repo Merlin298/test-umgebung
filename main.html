@@ -3,21 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Wichtige Frage...</title>
-    <style>
+    <title>Sicherheitsüberprüfung</title> <style>
         @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&display=swap');
 
         body {
             margin: 0;
             padding: 0;
             font-family: 'Nunito', sans-serif;
-            background-color: #fce4ec; /* Ein sanftes Pastell-Rosa */
+            background-color: #fce4ec;
             height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
             text-align: center;
-            overflow: hidden; /* Verhindert Scrollen, wenn der Button springt */
+            overflow: hidden; /* Verhindert, dass die Seite scrollt, wenn der Button an den Rand springt */
         }
 
         /* --- CAPTCHA BEREICH --- */
@@ -68,7 +67,7 @@
 
         /* --- FRAGEN BEREICH --- */
         #question-screen {
-            display: none; /* Erst versteckt */
+            display: none;
             flex-direction: column;
             align-items: center;
             padding: 20px;
@@ -84,11 +83,9 @@
 
         .buttons {
             display: flex;
-            gap: 20px;
-            position: relative;
-            width: 100%;
+            gap: 20px; /* Normaler Abstand zwischen den Buttons */
             justify-content: center;
-            height: 100px;
+            align-items: center;
         }
 
         button {
@@ -116,12 +113,10 @@
         #btn-no {
             background-color: #e0e0e0;
             color: #555;
-            position: absolute; /* Wichtig für das Teleportieren */
-            /* Startposition */
-            transform: translateX(80px);
+            /* Kein absolute positioning mehr hier, er startet ganz normal! */
         }
 
-        /* GIF Container nach dem Ja */
+        /* --- ERFOLGS BEREICH --- */
         #success-screen {
             display: none;
             flex-direction: column;
@@ -136,8 +131,6 @@
         @media (max-width: 600px) {
             h1 { font-size: 2rem; }
             button { font-size: 1.2rem; padding: 12px 30px; }
-            #btn-no { transform: translateX(70px); }
-            #btn-yes { transform: translateX(-70px); }
         }
     </style>
 </head>
@@ -155,7 +148,7 @@
         <h1>Willst du meine Freundin sein? ❤️</h1>
         <div class="buttons">
             <button id="btn-yes" onclick="sayYes()">Ja!</button>
-            <button id="btn-no" id="btn-no">Nein.</button>
+            <button id="btn-no">Nein.</button>
         </div>
     </div>
 
@@ -165,51 +158,47 @@
     </div>
 
     <script>
-        // --- LOGIK FÜR DAS CAPTCHA ---
+        // --- CAPTCHA LOGIK ---
         function verifyCaptcha() {
             const box = document.getElementById('captcha-box');
             box.classList.add('checked');
             
-            // Warte kurz (1 Sekunde), damit es sich "echt" anfühlt, dann wechsle den Bildschirm
             setTimeout(() => {
                 document.getElementById('captcha-screen').style.display = 'none';
                 document.getElementById('question-screen').style.display = 'flex';
             }, 1000);
         }
 
-        // --- LOGIK FÜR DEN WEGRENNENDEN BUTTON ---
+        // --- BUTTON TELEPORT LOGIK ---
         const btnNo = document.getElementById('btn-no');
 
-        // Funktion zum Bewegen des Buttons
-        function moveButton() {
-            // Bildschirmgröße auslesen
+        function moveButton(e) {
+            // Verhindert, dass der Klick ausgeführt wird, bevor der Button weg ist
+            if (e) e.preventDefault(); 
+            
             const windowWidth = window.innerWidth;
             const windowHeight = window.innerHeight;
             
-            // Button-Größe auslesen
             const btnWidth = btnNo.offsetWidth;
             const btnHeight = btnNo.offsetHeight;
 
-            // Zufällige neue Position berechnen (mit etwas Abstand zum Rand)
-            const randomX = Math.floor(Math.random() * (windowWidth - btnWidth - 40)) + 20;
-            const randomY = Math.floor(Math.random() * (windowHeight - btnHeight - 40)) + 20;
+            // Berechnet eine zufällige Position innerhalb des sichtbaren Bereichs
+            const randomX = Math.floor(Math.random() * (windowWidth - btnWidth - 20)) + 10;
+            const randomY = Math.floor(Math.random() * (windowHeight - btnHeight - 20)) + 10;
 
-            // Neue Position setzen
-            btnNo.style.position = 'fixed'; // Damit er über den ganzen Bildschirm springt
+            // Löst den Button aus dem normalen Layout und setzt ihn auf die neue Position
+            btnNo.style.position = 'fixed'; 
             btnNo.style.left = randomX + 'px';
             btnNo.style.top = randomY + 'px';
-            btnNo.style.transform = 'none'; // Setzt den anfänglichen Transform zurück
         }
 
-        // Löst aus, wenn man mit der Maus drüberfährt (PC)
-        btnNo.addEventListener('mouseover', moveButton);
-        // Löst aus, wenn man versucht, ihn auf dem Handy anzutippen
-        btnNo.addEventListener('touchstart', function(e) {
-            e.preventDefault(); // Verhindert, dass der Klick trotzdem durchgeht
-            moveButton();
-        });
+        // Am Handy: Reagiert in der Millisekunde, in der der Finger das Display berührt
+        btnNo.addEventListener('touchstart', moveButton, {passive: false});
+        
+        // Am PC: Reagiert, wenn die Maustaste gedrückt wird
+        btnNo.addEventListener('mousedown', moveButton);
 
-        // --- LOGIK FÜR DAS "JA" ---
+        // --- JA LOGIK ---
         function sayYes() {
             document.getElementById('question-screen').style.display = 'none';
             document.getElementById('success-screen').style.display = 'flex';
